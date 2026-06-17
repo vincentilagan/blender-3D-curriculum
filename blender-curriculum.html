@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blender 3D in the Curriculum</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --panel: #ffffff;
+      --ink: #172033;
+      --muted: #667085;
+      --brand: #2563eb;
+      --brand-dark: #1d4ed8;
+      --accent: #f59e0b;
+      --line: #d8deea;
+      --soft: #eaf1ff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    header {
+      padding: 14px 18px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .logo {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--brand), var(--accent));
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+
+    .brand h1 {
+      font-size: 17px;
+      margin: 0;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .brand p {
+      margin: 2px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button.primary {
+      background: var(--brand);
+      color: white;
+      border-color: var(--brand);
+    }
+
+    button:hover { border-color: var(--brand); }
+
+    main {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      padding: 22px;
+      display: grid;
+      align-items: center;
+    }
+
+    .slide {
+      display: none;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-height: min(680px, calc(100vh - 150px));
+      padding: clamp(22px, 4vw, 54px);
+      box-shadow: 0 18px 44px rgba(20, 31, 55, 0.08);
+    }
+
+    .slide.active {
+      display: grid;
+      gap: 22px;
+      align-content: center;
+    }
+
+    .eyebrow {
+      color: var(--brand);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 13px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(32px, 6vw, 64px);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 0;
+      font-size: clamp(24px, 4vw, 42px);
+      line-height: 1.1;
+    }
+
+    p {
+      font-size: clamp(16px, 2vw, 22px);
+      line-height: 1.55;
+      margin: 0;
+      color: #2e3a50;
+    }
+
+    .lead {
+      max-width: 820px;
+      font-size: clamp(18px, 2.4vw, 26px);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+      background: #fbfcff;
+    }
+
+    .card strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .card span {
+      color: var(--muted);
+      line-height: 1.45;
+      display: block;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 22px;
+      display: grid;
+      gap: 12px;
+      font-size: clamp(17px, 2vw, 23px);
+      line-height: 1.45;
+    }
+
+    li::marker {
+      color: var(--brand);
+      font-weight: 800;
+    }
+
+    .two {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 22px;
+      align-items: center;
+    }
+
+    .visual {
+      min-height: 290px;
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 28% 25%, #ffffff 0 8%, transparent 9%),
+        linear-gradient(135deg, #dbeafe, #eff6ff 55%, #fff7ed);
+      border: 1px solid var(--line);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cube {
+      width: 120px;
+      height: 120px;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) rotateX(58deg) rotateZ(38deg);
+      transform-style: preserve-3d;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .cube div {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      border: 2px solid rgba(23, 32, 51, 0.18);
+    }
+
+    .front { background: rgba(37, 99, 235, 0.85); transform: translateZ(60px); }
+    .back { background: rgba(245, 158, 11, 0.65); transform: rotateY(180deg) translateZ(60px); }
+    .right { background: rgba(29, 78, 216, 0.75); transform: rotateY(90deg) translateZ(60px); }
+    .left { background: rgba(125, 161, 255, 0.7); transform: rotateY(-90deg) translateZ(60px); }
+    .top { background: rgba(255, 255, 255, 0.9); transform: rotateX(90deg) translateZ(60px); }
+    .bottom { background: rgba(15, 23, 42, 0.18); transform: rotateX(-90deg) translateZ(60px); }
+
+    @keyframes float {
+      0%, 100% { margin-top: 0; }
+      50% { margin-top: -14px; }
+    }
+
+    .timeline {
+      display: grid;
+      gap: 12px;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 86px 1fr;
+      gap: 14px;
+      align-items: start;
+      padding: 14px;
+      background: var(--soft);
+      border-radius: 8px;
+    }
+
+    .week {
+      font-weight: 800;
+      color: var(--brand-dark);
+    }
+
+    .note {
+      border-left: 5px solid var(--accent);
+      background: #fff8eb;
+      padding: 16px;
+      border-radius: 8px;
+      color: #5f4214;
+      font-size: 17px;
+      line-height: 1.45;
+    }
+
+    footer {
+      padding: 12px 18px 16px;
+      display: grid;
+      gap: 8px;
+      background: var(--panel);
+      border-top: 1px solid var(--line);
+    }
+
+    .progress-wrap {
+      height: 8px;
+      background: #e8edf6;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress {
+      height: 100%;
+      width: 0%;
+      background: var(--brand);
+      transition: width 0.25s ease;
+    }
+
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 820px) {
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .controls { width: 100%; }
+
+      .controls button { flex: 1; }
+
+      main { padding: 14px; }
+
+      .slide {
+        min-height: calc(100vh - 190px);
+        padding: 22px;
+      }
+
+      .grid,
+      .two {
+        grid-template-columns: 1fr;
+      }
+
+      .visual { min-height: 210px; }
+
+      .cube {
+        transform: translate(-50%, -50%) scale(0.75) rotateX(58deg) rotateZ(38deg);
+      }
+
+      .step { grid-template-columns: 1fr; }
+    }
+
+    @media print {
+      header,
+      footer { display: none; }
+
+      body { background: white; }
+
+      main {
+        display: block;
+        padding: 0;
+        width: 100%;
+      }
+
+      .slide,
+      .slide.active {
+        display: grid;
+        page-break-after: always;
+        min-height: 100vh;
+        border: 0;
+        box-shadow: none;
+        border-radius: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <div class="logo">B3D</div>
+        <div>
+          <h1>Blender 3D in the Curriculum</h1>
+          <p>Presentation guide for a school proposal</p>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="prevBtn">Back</button>
+        <button id="nextBtn" class="primary">Next</button>
+        <button onclick="window.print()">Print</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="slide active">
+        <div class="eyebrow">Proposal Presentation</div>
+        <div class="two">
+          <div>
+            <h2>Blender 3D as part of the school curriculum</h2>
+            <p class="lead">
+              This proposal introduces students to 3D modeling, animation, design thinking,
+              problem solving, and digital creativity using a free, powerful, and
+              industry-recognized software.
+            </p>
+          </div>
+          <div class="visual" aria-label="3D cube illustration">
+            <div class="cube">
+              <div class="front"></div>
+              <div class="back"></div>
+              <div class="right"></div>
+              <div class="left"></div>
+              <div class="top"></div>
+              <div class="bottom"></div>
+            </div>
+          </div>
+        </div>
+        <div class="note">
+          Opening line: “Good day. This proposal shows how Blender 3D can make learning
+          more practical, creative, and future-ready for students.”
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="eyebrow">Why Blender?</div>
+        <h3>Free, powerful, and used across creative industries</h3>
+        <div class="grid">
+          <div class="card">
+            <strong>Accessible</strong>
+            <span>Blender is free to use, which makes it practical for schools and students.</span>
+          </div>
+          <div class="card">
+            <strong>Skill-based</strong>
+            <span>Students learn modeling, animation, lighting, rendering, and visual storytelling.</span>
+          </div>
+          <div class="card">
+            <strong>Career-ready</strong>
+            <span>It connects to animation, game design, architecture, product design, and media arts.</span>
+          </div>
+        </div>
+        <div class="note">
+          Presentation tip: Emphasize that this is not just “drawing on a computer.”
+          It develops creativity, logic, planning, and technical skills.
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="eyebrow">Learning Goals</div>
+        <h3>What will students learn?</h3>
+        <ul>
+          <li>Basic 3D navigation, shapes, objects, and workspace tools.</li>
+          <li>How to create simple 3D objects such as a room, product, character, or logo.</li>
+          <li>Materials, colors, lighting, camera angles, and rendering.</li>
+          <li>Simple animation using keyframes.</li>
+          <li>A portfolio project that can be presented in a school exhibit or performance task.</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <div class="eyebrow">Curriculum Integration</div>
+        <h3>How can it fit into school subjects?</h3>
+        <div class="grid">
+          <div class="card">
+            <strong>TLE / ICT</strong>
+            <span>3D modeling, digital production, file management, and project output.</span>
+          </div>
+          <div class="card">
+            <strong>Arts</strong>
+            <span>Form, color, composition, character design, and visual storytelling.</span>
+          </div>
+          <div class="card">
+            <strong>Math / STEM</strong>
+            <span>Geometry, measurement, symmetry, scale, spatial thinking, and problem solving.</span>
+          </div>
+        </div>
+        <p>
+          Blender can be offered as a module, elective, club activity, or project-based
+          unit depending on grade level and computer lab availability.
+        </p>
+      </section>
+
+      <section class="slide">
+        <div class="eyebrow">Sample 6-Week Plan</div>
+        <h3>Simple implementation timeline</h3>
+        <div class="timeline">
+          <div class="step">
+            <div class="week">Week 1</div>
+            <div>Introduction to the Blender interface, controls, shapes, and basic navigation.</div>
+          </div>
+          <div class="step">
+            <div class="week">Week 2</div>
+            <div>Basic modeling: create a desk, chair, simple room, or school-related object.</div>
+          </div>
+          <div class="step">
+            <div class="week">Week 3</div>
+            <div>Materials, colors, texture basics, lighting, and camera setup.</div>
+          </div>
+          <div class="step">
+            <div class="week">Week 4</div>
+            <div>Animation basics: movement, rotation, keyframes, and a short scene.</div>
+          </div>
+          <div class="step">
+            <div class="week">Week 5-6</div>
+            <div>Final project, peer review, rendering, and class presentation.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="eyebrow">Assessment</div>
+        <h3>How can student output be graded?</h3>
+        <div class="grid">
+          <div class="card">
+            <strong>Technical Skill</strong>
+            <span>The model, scale, objects, lighting, and render quality are clear and organized.</span>
+          </div>
+          <div class="card">
+            <strong>Creativity</strong>
+            <span>The concept is original and the visual idea is communicated well.</span>
+          </div>
+          <div class="card">
+            <strong>Process</strong>
+            <span>The student shows planning, progress screenshots, reflection, and final presentation.</span>
+          </div>
+        </div>
+        <div class="note">
+          Suggested grading: 40% final output, 30% process, 20% creativity, 10% presentation.
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="eyebrow">Resources Needed</div>
+        <h3>What is needed to get started?</h3>
+        <ul>
+          <li>Computer lab or shared devices with Blender installed.</li>
+          <li>A mouse with a scroll wheel for easier 3D navigation.</li>
+          <li>Teacher orientation or a short training session.</li>
+          <li>Prepared modules, sample projects, and grading rubric.</li>
+          <li>Final showcase through a classroom exhibit, digital gallery, or video presentation.</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <div class="eyebrow">How To Present</div>
+        <h3>Suggested presentation flow</h3>
+        <ul>
+          <li>Start with the need: students need practical digital and creative skills.</li>
+          <li>Introduce Blender as a free and powerful learning tool.</li>
+          <li>Explain which subjects Blender can support.</li>
+          <li>Show the sample 6-week plan and assessment rubric.</li>
+          <li>End with the benefits: creativity, confidence, portfolio building, and career readiness.</li>
+        </ul>
+        <div class="note">
+          Closing line: “With Blender 3D, students do not only learn software.
+          They learn how to think, design, plan, and create outputs with real-world value.”
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="eyebrow">Closing</div>
+        <h2>Future-ready learning starts with creative tools.</h2>
+        <p class="lead">
+          Blender 3D is a practical way to combine technology, arts, STEM, and
+          project-based learning into one engaging curriculum experience.
+        </p>
+        <div class="note">
+          Q&A prompt: “Are there any questions about the schedule, resources, assessment,
+          or which grade level would be best for starting this program?”
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="progress-wrap">
+        <div class="progress" id="progress"></div>
+      </div>
+      <div class="meta">
+        <span id="counter">Slide 1 of 9</span>
+        <span>Tip: use the arrow keys to move forward or backward</span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll(".slide"));
+    const progress = document.getElementById("progress");
+    const counter = document.getElementById("counter");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    let index = 0;
+
+    function showSlide(nextIndex) {
+      index = Math.max(0, Math.min(nextIndex, slides.length - 1));
+
+      slides.forEach((slide, i) => {
+        slide.classList.toggle("active", i === index);
+      });
+
+      const percent = ((index + 1) / slides.length) * 100;
+      progress.style.width = percent + "%";
+      counter.textContent = "Slide " + (index + 1) + " of " + slides.length;
+
+      prevBtn.disabled = index === 0;
+      nextBtn.textContent = index === slides.length - 1 ? "Done" : "Next";
+    }
+
+    prevBtn.addEventListener("click", () => showSlide(index - 1));
+    nextBtn.addEventListener("click", () => {
+      if (index < slides.length - 1) showSlide(index + 1);
+    });
+
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowRight" || event.key === " ") showSlide(index + 1);
+      if (event.key === "ArrowLeft") showSlide(index - 1);
+    });
+
+    showSlide(0);
+  </script>
+</body>
+</html>
